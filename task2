@@ -1,0 +1,47 @@
+// server.js const express = require('express'); const http = require('http'); const { Server } = require('socket.io'); const path = require('path');
+
+const app = express(); const server = http.createServer(app); const io = new Server(server);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+io.on('connection', (socket) => { console.log('A user connected:', socket.id);
+
+socket.on('chat message', (msg) => { io.emit('chat message', { id: socket.id, message: msg }); });
+
+socket.on('disconnect', () => { console.log('User disconnected:', socket.id); }); });
+
+const PORT = process.env.PORT || 3000; server.listen(PORT, () => { console.log(Server listening on port ${PORT}); });
+
+// public/index.html
+
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat App</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #messages { list-style-type: none; padding: 0; }
+    #messages li { padding: 5px 10px; }
+    #form { display: flex; }
+    #input { flex: 1; padding: 10px; }
+  </style>
+</head>
+<body>
+  <ul id="messages"></ul>
+  <form id="form" action="">
+    <input id="input" autocomplete="off" /><button>Send</button>
+  </form>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (input.value) {
+    socket.emit('chat message', input.value);
+    input.value = '';
+  }
+});
+
+socket.on('chat
